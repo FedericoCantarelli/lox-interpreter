@@ -7,10 +7,12 @@ authors = [
     { name = "FedericoCantarelli", email = "fede.cantarelli98@gmail.com" }
 ]
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "click>=8.3.1",
+]
 
 [project.scripts]
-lox-interpreter = "lox_interpreter:main"
+lox = "lox_interpreter:main"
 
 [build-system]
 requires = ["uv_build>=0.9.18,<0.10.0"]
