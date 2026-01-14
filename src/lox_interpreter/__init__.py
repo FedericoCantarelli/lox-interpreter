@@ -1,6 +1,8 @@
+"""Lox Interpreter CLI entry point."""
+
 import click
 
-import lox_interpreter.commands as commands
+from lox_interpreter import commands
 
 
 @click.group()
