@@ -1,5 +1,3 @@
-import sys
-
 from lox_interpreter.lox.token import Token
 from lox_interpreter.lox.token_type import TokenType
 
