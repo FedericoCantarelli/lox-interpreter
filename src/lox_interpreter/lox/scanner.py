@@ -1,5 +1,5 @@
 from lox_interpreter.lox.token import Token
-from lox_interpreter.lox.token_type import TokenType
+from lox_interpreter.lox.token_type import TokenType, token_mapping
 
 
 class Scanner:
@@ -63,6 +63,92 @@ class Scanner:
                 self.add_token(TokenType.GREATER_EQUAL)
             else:
                 self.add_token(TokenType.GREATER)
+        elif char == "/":
+            if self.match("/"):
+                # A comment goes until the end of the line.
+                while self.peek() != "\n" and not self.is_at_end():
+                    self.advance()
+            else:
+                self.add_token(TokenType.SLASH)
+        elif char in (" ", "\r", "\t"):
+            # Ignore whitespace.
+            pass
+        elif char == '"':
+            self.string()
+        elif char == "\n":
+            self.line += 1
+        elif char == "o":
+            if self.peek() == "r":
+                self.add_token(TokenType.OR)
+        else:
+            if self.is_digit(char):
+                self.number()
+            elif self.is_alpha(char):
+                self.identifier()
+            else:
+                print(f"Unexpected character: {char}")
+
+    def identifier(self):
+        while self.is_alpha(self.peek()) or self.is_digit(self.peek()):
+            self.advance()
+        text = self.source[self.start : self.current]
+        token_type = token_mapping.get(text, TokenType.IDENTIFIER)
+        if token_type is None:
+            token_type = TokenType.IDENTIFIER
+        self.add_token(token_type)
+
+    def is_alpha(self, char: str) -> bool:
+        return (
+            (char >= "a" and char <= "z")
+            or (char >= "A" and char <= "Z")
+            or char == "_"
+        )
+
+    def is_alpha_numeric(self, char: str) -> bool:
+        return self.is_alpha(char) or self.is_digit(char)
+
+    def is_digit(self, char: str) -> bool:
+        return char >= "0" and char <= "9"
+
+    def peek_next(self) -> str:
+        """Look at the character after the current one without consuming it."""
+        if self.current + 1 >= len(self.source):
+            return "\0"
+        return self.source[self.current + 1]
+
+    def number(self):
+        """Handle number literals."""
+        while self.peek().isdigit():
+            self.advance()
+        # Look for a fractional part.
+        if self.peek() == "." and self.peek_next().isdigit():
+            # Consume the "."
+            self.advance()
+            while self.peek().isdigit():
+                self.advance()
+        value = float(self.source[self.start : self.current])
+        self.add_token(TokenType.NUMBER, value)
+
+    def string(self):
+        """Handle string literals."""
+        while self.peek() != '"' and not self.is_at_end():
+            if self.peek() == "\n":
+                self.line += 1
+            self.advance()
+        if self.is_at_end():
+            print("Unterminated string.")
+            return
+        # The closing ".
+        self.advance()
+        # Trim the surrounding quotes.
+        value = self.source[self.start + 1 : self.current - 1]
+        self.add_token(TokenType.STRING, value)
+
+    def peek(self) -> str:
+        """Look at the current character without consuming it."""
+        if self.is_at_end():
+            return "\0"
+        return self.source[self.current]
 
     def advance(self) -> str:
         """Consume the current character and return it."""
