@@ -157,7 +157,8 @@ class Scanner:
 
     def add_token(self, token_type: TokenType, literal: object | None = None):
         text = self.source[self.start : self.current]
-        self.tokens.append(Token(token_type, text, literal, self.line))
+        if self.tokens is None:
+            self.tokens = []
         self.tokens.append(Token(token_type, text, literal, self.line))
 
     def match(self, expected: str) -> bool:
